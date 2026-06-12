@@ -1,79 +1,55 @@
+# NLP Labs
 
-# NLP Practical Work (TPs)
+Graduate NLP coursework (CentraleSupélec × ESSEC, AIDAMS program). Five Jupyter notebooks that go from optimization fundamentals to a full Hugging Face fine-tuning pipeline, a six-method text-classification benchmark, and topic modeling of ~45K ArXiv abstracts with BERTopic.
 
-This repository contains practical work notebooks for Natural Language Processing (NLP) course.
+## Contents
 
-## Notebooks
+| Notebook | What it covers |
+|---|---|
+| [`TP2_Introduction_maths_optimisation.ipynb`](TP2_Introduction_maths_optimisation.ipynb) | Optimization foundations for ML: analytical critical points, gradients and Hessian matrices, eigenvalue-based classification of stationary points, 3D surface and contour plots (NumPy/Matplotlib). |
+| [`TP3_Transformers_Introduction.ipynb`](TP3_Transformers_Introduction.ipynb) | Hugging Face `pipeline` API across six core NLP tasks: text classification, NER, question answering, summarization, translation (Helsinki-NLP MarianMT), and text generation. |
+| [`TP4_Transformer_Text_Classification.ipynb`](TP4_Transformer_Text_Classification.ipynb) | End-to-end emotion classification on the `emotion` dataset: class-imbalance handling, tokenizer comparison (DistilBERT vs BERT vs RoBERTa), feature extraction with frozen encoders + UMAP visualization, fine-tuning DistilBERT/RoBERTa/ALBERT with the `Trainer` API, error analysis, and deployment patterns (HF Inference API, Flask). |
+| [`TP5/TP5.ipynb`](TP5/TP5.ipynb) | Six approaches to sentiment classification benchmarked on the same Rotten Tomatoes test set — task-specific model, embeddings + classifier, prototype similarity, zero-shot, LLM prompting, and text-to-text generation (results below). |
+| [`TP6/TP6.ipynb`](TP6/TP6.ipynb) | Clustering and topic modeling of ~45K ArXiv NLP paper abstracts: sentence embeddings → UMAP → HDBSCAN (155 clusters), then BERTopic with multiple topic-representation models, including LLM-generated topic labels. |
 
-### TP2: Introduction to Mathematical Optimization
-**File:** `TP2_Introduction_maths_optimisation.ipynb`
+## Key techniques
 
-Introduction to mathematical optimization concepts including:
-- Analytical determination of critical points
-- Function plotting and visualization
-- Gradient and Hessian matrix calculations
-- Contour line plotting
-- Determining the nature of critical points
+**Transformer fine-tuning and evaluation (TP4)**
+- Fine-tuning `distilbert-base-uncased`, `roberta-base`, and `albert-base-v2` for 6-class emotion classification with the Hugging Face `Trainer` API.
+- Feature-extraction baseline: frozen DistilBERT hidden states fed to scikit-learn classifiers — logistic regression reaches 0.63 accuracy vs a 0.35 dummy baseline on validation embeddings.
+- Class-imbalance strategies (class weights, `imbalanced-learn` over/under-sampling), confusion-matrix error analysis, UMAP projection of embeddings.
 
-### TP3: Transformers Introduction
-**File:** `TP3_Transformers_Introduction.ipynb`
+**Classification method benchmark (TP5)** — accuracy on 1,066 Rotten Tomatoes test reviews:
 
-Hands-on introduction to Hugging Face Transformers for various NLP tasks:
-- Text Classification (sentiment analysis)
-- Named Entity Recognition (NER)
-- Question Answering
-- Text Summarization
-- Machine Translation
-- Text Generation
+| Method | Model | Accuracy |
+|---|---|---|
+| Pre-trained task-specific model | `cardiffnlp/twitter-roberta-base-sentiment-latest` | 0.80 |
+| Embeddings + logistic regression | `all-mpnet-base-v2` + scikit-learn | 0.85 |
+| Unsupervised prototype similarity | class-mean embeddings, cosine similarity | 0.84 |
+| Zero-shot via label embeddings | embed label descriptions, cosine similarity | 0.78 |
+| LLM prompting | Llama 4 Scout via Groq API | sampled only |
+| Text-to-text generation | `google/flan-t5-small` | 0.84 |
 
-### TP4: Transformer Text Classification
-**File:** `TP4_Transformer_Text_Classification.ipynb`
+**Topic modeling at scale (TP6)**
+- Classic pipeline built by hand: `gte-small` sentence embeddings (384-d) → UMAP to 5 dimensions → HDBSCAN (`min_cluster_size=50`, 155 clusters found).
+- BERTopic with c-TF-IDF topic extraction, compared against richer representation models: KeyBERTInspired, Maximal Marginal Relevance, Flan-T5 text generation, and a custom Groq-powered function that relabels every topic with an LLM (with retry/rate-limit handling).
+- Interactive cluster visualizations and per-topic word clouds.
 
-Complete pipeline for emotion classification using Hugging Face transformers:
-- Dataset exploration and handling class imbalance
-- Tokenization with different models
-- Feature extraction using pre-trained models
-- Fine-tuning transformer models
-- Model evaluation and error analysis
-- Model deployment strategies
+**Foundations (TP2, TP3)**
+- Analytical optimization: gradients, Hessians, eigenvalue tests for the nature of critical points — the math behind gradient-based training.
+- Survey of the main NLP task families through Hugging Face pipelines before building anything custom.
 
-### TP5: Sequence-to-Sequence Tasks
-**File:** `TP5_Sequence_to_Sequence_Tasks.ipynb`  
-**🔗 [Open on Google Colab](https://colab.research.google.com/drive/1zHX-kwZJIJF-p4KGH66kuLaSAPkhoGGo?authuser=1)**
+## Running
 
-Exploring encoder-decoder architectures for machine translation and text summarization:
-- Machine Translation using MarianMT, mBART, and T5
-- Text Summarization with BART and T5
-- Evaluation metrics (BLEU for translation, ROUGE for summarization)
-- Handling long documents
-- Fine-tuning templates
+Notebooks are self-contained (each starts with its own `pip install` cell) and were developed on Google Colab — a GPU runtime is recommended for TP4–TP6.
 
-### TP6: Clustering and Topic Modeling
-**File:** `TP6_Clustering_and_Topic_Modeling.ipynb`  
-**🔗 [Open on Google Colab](https://colab.research.google.com/drive/12XBVKUTW-9j1IVXFGJSkr3kSTrQH4kUP?authuser=1#scrollTo=YFSNG30jxWGo)**
+Local setup:
 
-Clustering and topic modeling with BERTopic:
-- Text clustering pipeline (embeddings, dimensionality reduction, clustering)
-- Topic modeling with BERTopic
-- Topic representation methods (KeyBERT, MMR, Flan-T5, Groq)
-- Interactive visualizations
-- Word clouds for topics
+```bash
+pip install transformers datasets torch accelerate sentence-transformers \
+    scikit-learn imbalanced-learn umap-learn hdbscan bertopic \
+    matplotlib plotly wordcloud groq
+jupyter lab
+```
 
-## Requirements
-
-The notebooks require various Python packages. Each notebook includes installation instructions for the required dependencies.
-
-Main packages used:
-- `transformers` - Hugging Face Transformers library
-- `datasets` - Hugging Face Datasets
-- `torch` - PyTorch
-- `sentence-transformers` - Sentence embeddings
-- `bertopic` - Topic modeling
-- `scikit-learn` - Machine learning utilities
-- `matplotlib`, `plotly` - Visualization
-- `umap-learn` - Dimensionality reduction
-- `hdbscan` - Clustering
-
-## Usage
-
-Each notebook is self-contained and can be run independently. Follow the instructions within each notebook to install dependencies and execute the code.
+The LLM sections of TP5 and TP6 call the Groq API — set your own key via the `GROQ_API_KEY` environment variable.
